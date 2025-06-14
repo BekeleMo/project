@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 interface Customer {
   id: number;
@@ -10,6 +11,7 @@ interface Customer {
   status: 'active' | 'inactive';
   joinDate: Date;
   phone?: string;
+  avatar?: string;
 }
 
 @Component({
@@ -20,17 +22,25 @@ interface Customer {
     <div class="space-y-6">
       <!-- Search and Filter Section -->
       <div class="card">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Search Input -->
-          <div class="form-group mb-0">
+          <div class="form-group mb-0 sm:col-span-2 lg:col-span-1">
             <label for="searchCustomers" class="form-label">Search Customers</label>
-            <input
-              id="searchCustomers"
-              type="text"
-              [formControl]="searchControl"
-              class="search-input"
-              placeholder="Search customers..."
-            />
+            <div class="relative">
+              <input
+                id="searchCustomers"
+                type="text"
+                [formControl]="searchControl"
+                class="search-input pr-10"
+                placeholder="Search customers..."
+                autocomplete="off"
+              />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+            </div>
           </div>
 
           <!-- Status Filter -->
@@ -46,24 +56,76 @@ interface Customer {
               <option value="inactive">Inactive</option>
             </select>
           </div>
+
+          <!-- Sort Options -->
+          <div class="form-group mb-0">
+            <label for="sortBy" class="form-label">Sort By</label>
+            <select
+              id="sortBy"
+              [formControl]="sortControl"
+              class="search-input"
+            >
+              <option value="name">Name</option>
+              <option value="joinDate">Join Date</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="mt-6 pt-6 border-t border-gray-100">
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-600">{{ getTotalCustomers() }}</div>
+              <div class="text-sm text-gray-500">Total</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-green-600">{{ getActiveCustomers() }}</div>
+              <div class="text-sm text-gray-500">Active</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-600">{{ getInactiveCustomers() }}</div>
+              <div class="text-sm text-gray-500">Inactive</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-purple-600">{{ filteredCustomers.length }}</div>
+              <div class="text-sm text-gray-500">Filtered</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Customer List -->
       <div class="card">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-semibold text-gray-900">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
             Customers ({{ filteredCustomers.length }})
           </h3>
-          <button class="btn btn-primary">
-            Add Customer
-          </button>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button class="btn btn-secondary text-sm">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Export
+            </button>
+            <button class="btn btn-primary text-sm">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Add Customer
+            </button>
+          </div>
         </div>
 
-        <!-- Mobile-first responsive table -->
-        <div class="overflow-x-auto">
-          <div class="hidden md:block">
-            <!-- Desktop Table -->
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span class="ml-3 text-gray-600">Loading customers...</span>
+        </div>
+
+        <!-- Desktop Table -->
+        <div *ngIf="!isLoading" class="table-responsive">
+          <div class="hidden lg:block">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
@@ -88,7 +150,17 @@ interface Customer {
                 <tr *ngFor="let customer of filteredCustomers; trackBy: trackByCustomerId" 
                     class="hover:bg-gray-50 transition-colors duration-150">
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ customer.name }}</div>
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
+                          {{ getInitials(customer.name) }}
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{ customer.name }}</div>
+                        <div class="text-sm text-gray-500">ID: {{ customer.id }}</div>
+                      </div>
+                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ customer.email }}</div>
@@ -107,23 +179,89 @@ interface Customer {
                     {{ customer.joinDate | date:'mediumDate' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button class="text-primary-600 hover:text-primary-900 mr-3">Edit</button>
-                    <button class="text-red-600 hover:text-red-900">Delete</button>
+                    <div class="flex items-center justify-end space-x-2">
+                      <button class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      </button>
+                      <button class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <!-- Tablet View -->
+          <div class="hidden md:block lg:hidden">
+            <div class="space-y-3">
+              <div *ngFor="let customer of filteredCustomers; trackBy: trackByCustomerId" 
+                   class="mobile-card">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0 h-12 w-12">
+                      <div class="h-12 w-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium">
+                        {{ getInitials(customer.name) }}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-lg font-medium text-gray-900">{{ customer.name }}</h4>
+                      <p class="text-sm text-gray-600">{{ customer.email }}</p>
+                      <p *ngIf="customer.phone" class="text-sm text-gray-500">{{ customer.phone }}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span 
+                      class="status-badge mb-2 block"
+                      [class.active]="customer.status === 'active'"
+                      [class.inactive]="customer.status === 'inactive'"
+                    >
+                      {{ customer.status | titlecase }}
+                    </span>
+                    <div class="flex space-x-2">
+                      <button class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      </button>
+                      <button class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                  <span class="text-sm text-gray-500">
+                    Joined: {{ customer.joinDate | date:'mediumDate' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Mobile Cards -->
           <div class="md:hidden space-y-4">
             <div *ngFor="let customer of filteredCustomers; trackBy: trackByCustomerId" 
-                 class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                 class="mobile-card">
               <div class="flex items-start justify-between mb-3">
-                <div>
-                  <h4 class="text-lg font-medium text-gray-900">{{ customer.name }}</h4>
-                  <p class="text-sm text-gray-600">{{ customer.email }}</p>
-                  <p *ngIf="customer.phone" class="text-sm text-gray-500">{{ customer.phone }}</p>
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
+                      {{ getInitials(customer.name) }}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-medium text-gray-900">{{ customer.name }}</h4>
+                    <p class="text-sm text-gray-600">{{ customer.email }}</p>
+                    <p *ngIf="customer.phone" class="text-sm text-gray-500">{{ customer.phone }}</p>
+                  </div>
                 </div>
                 <span 
                   class="status-badge"
@@ -133,12 +271,12 @@ interface Customer {
                   {{ customer.status | titlecase }}
                 </span>
               </div>
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                 <span class="text-sm text-gray-500">
-                  Joined: {{ customer.joinDate | date:'mediumDate' }}
+                  Joined: {{ customer.joinDate | date:'shortDate' }}
                 </span>
                 <div class="flex space-x-3">
-                  <button class="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
+                  <button class="text-blue-600 hover:text-blue-900 text-sm font-medium">Edit</button>
                   <button class="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
                 </div>
               </div>
@@ -147,7 +285,7 @@ interface Customer {
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="filteredCustomers.length === 0" class="text-center py-12">
+        <div *ngIf="!isLoading && filteredCustomers.length === 0" class="text-center py-12">
           <div class="text-gray-400 mb-4">
             <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -155,16 +293,23 @@ interface Customer {
             </svg>
           </div>
           <h3 class="text-lg font-medium text-gray-900 mb-2">No customers found</h3>
-          <p class="text-gray-500">Try adjusting your search or filter criteria.</p>
+          <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria.</p>
+          <button class="btn btn-primary">
+            Add Your First Customer
+          </button>
         </div>
       </div>
     </div>
   `,
   styles: []
 })
-export class CustomerListComponent implements OnInit {
+export class CustomerListComponent implements OnInit, OnDestroy {
   searchControl = new FormControl('');
   statusFilterControl = new FormControl('');
+  sortControl = new FormControl('name');
+  
+  isLoading = false;
+  private destroy$ = new Subject<void>();
   
   customers: Customer[] = [
     {
@@ -197,6 +342,21 @@ export class CustomerListComponent implements OnInit {
       status: 'active',
       joinDate: new Date('2023-04-05'),
       phone: '+1 (555) 456-7890'
+    },
+    {
+      id: 5,
+      name: 'Charlie Wilson',
+      email: 'charlie.wilson@example.com',
+      status: 'active',
+      joinDate: new Date('2023-05-12'),
+      phone: '+1 (555) 321-0987'
+    },
+    {
+      id: 6,
+      name: 'Diana Prince',
+      email: 'diana.prince@example.com',
+      status: 'inactive',
+      joinDate: new Date('2023-06-08')
     }
   ];
 
@@ -205,6 +365,19 @@ export class CustomerListComponent implements OnInit {
   ngOnInit(): void {
     this.filteredCustomers = [...this.customers];
     this.setupFilters();
+    this.simulateLoading();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private simulateLoading(): void {
+    this.isLoading = true;
+    setTimeout(() => {
+      this.isLoading = false;
+    }, 1000);
   }
 
   private setupFilters(): void {
@@ -212,12 +385,19 @@ export class CustomerListComponent implements OnInit {
     this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
       )
       .subscribe(() => this.applyFilters());
 
     // Status filter
     this.statusFilterControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.applyFilters());
+
+    // Sort control
+    this.sortControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.applyFilters());
   }
 
@@ -240,10 +420,41 @@ export class CustomerListComponent implements OnInit {
       filtered = filtered.filter(customer => customer.status === statusFilter);
     }
 
+    // Apply sorting
+    const sortBy = this.sortControl.value;
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'joinDate':
+          return new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime();
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
     this.filteredCustomers = filtered;
   }
 
   trackByCustomerId(index: number, customer: Customer): number {
     return customer.id;
+  }
+
+  getInitials(name: string): string {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
+  getTotalCustomers(): number {
+    return this.customers.length;
+  }
+
+  getActiveCustomers(): number {
+    return this.customers.filter(c => c.status === 'active').length;
+  }
+
+  getInactiveCustomers(): number {
+    return this.customers.filter(c => c.status === 'inactive').length;
   }
 }
