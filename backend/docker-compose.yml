@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: inventory_postgres
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - inventory_network
+
+  app:
+    build: .
+    container_name: inventory_app
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: inventory_user
+      SPRING_DATASOURCE_PASSWORD: inventory_pass
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+    ports:
+      - "8080:8080"
+    networks:
+      - inventory_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  inventory_network:
+    driver: bridge

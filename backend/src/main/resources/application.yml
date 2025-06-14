@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: inventory-management-system
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inventory_db
+    username: ${DB_USERNAME:inventory_user}
+    password: ${DB_PASSWORD:inventory_pass}
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+      expiration: 86400000 # 24 hours
+      
+  cache:
+    type: simple
+    
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      
+logging:
+  level:
+    com.inventoryms: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    
+app:
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:3000
+  pagination:
+    default-page-size: 20
+    max-page-size: 100

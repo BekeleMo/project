@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="008-insert-default-data" author="system">
+        <!-- Insert default admin user -->
+        <insert tableName="users">
+            <column name="name" value="System Administrator"/>
+            <column name="email" value="admin@inventoryms.com"/>
+            <column name="password" value="$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi."/> <!-- password: password -->
+            <column name="role" value="ADMIN"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <!-- Insert admin permissions -->
+        <insert tableName="user_permissions">
+            <column name="user_id" value="1"/>
+            <column name="permission" value="all"/>
+        </insert>
+
+        <!-- Insert default system settings -->
+        <insert tableName="system_settings">
+            <column name="setting_key" value="company_name"/>
+            <column name="setting_value" value="Inventory Management System"/>
+            <column name="description" value="Company name displayed in the application"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="system_settings">
+            <column name="setting_key" value="currency"/>
+            <column name="setting_value" value="USD"/>
+            <column name="description" value="Default currency for the application"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="system_settings">
+            <column name="setting_key" value="tax_rate"/>
+            <column name="setting_value" value="8.0"/>
+            <column name="description" value="Default tax rate percentage"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="system_settings">
+            <column name="setting_key" value="low_stock_threshold"/>
+            <column name="setting_value" value="10"/>
+            <column name="description" value="Default low stock threshold"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="system_settings">
+            <column name="setting_key" value="email_notifications"/>
+            <column name="setting_value" value="true"/>
+            <column name="description" value="Enable email notifications"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <!-- Insert sample products -->
+        <insert tableName="products">
+            <column name="name" value="Wireless Bluetooth Headphones"/>
+            <column name="sku" value="WBH-001"/>
+            <column name="category" value="Electronics"/>
+            <column name="current_stock" value="45"/>
+            <column name="min_stock" value="10"/>
+            <column name="max_stock" value="100"/>
+            <column name="price" value="79.99"/>
+            <column name="cost" value="45.00"/>
+            <column name="supplier" value="TechCorp"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="description" value="High-quality wireless headphones with noise cancellation"/>
+            <column name="barcode" value="1234567890123"/>
+            <column name="weight" value="0.300"/>
+            <column name="dimensions" value="20x15x8 cm"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="name" value="Smartphone Case"/>
+            <column name="sku" value="SC-002"/>
+            <column name="category" value="Accessories"/>
+            <column name="current_stock" value="8"/>
+            <column name="min_stock" value="15"/>
+            <column name="max_stock" value="200"/>
+            <column name="price" value="24.99"/>
+            <column name="cost" value="12.00"/>
+            <column name="supplier" value="AccessoryPlus"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="description" value="Protective case for smartphones"/>
+            <column name="barcode" value="1234567890124"/>
+            <column name="weight" value="0.100"/>
+            <column name="dimensions" value="15x8x1 cm"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <!-- Insert sample customers -->
+        <insert tableName="customers">
+            <column name="name" value="John Smith"/>
+            <column name="email" value="john.smith@email.com"/>
+            <column name="phone" value="+1-555-0123"/>
+            <column name="address" value="123 Main St, City, State 12345"/>
+            <column name="total_orders" value="15"/>
+            <column name="total_spent" value="1250.75"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="notes" value="Preferred customer, always pays on time"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+
+        <insert tableName="customers">
+            <column name="name" value="Sarah Johnson"/>
+            <column name="email" value="sarah.johnson@email.com"/>
+            <column name="phone" value="+1-555-0124"/>
+            <column name="address" value="456 Oak Ave, City, State 12346"/>
+            <column name="total_orders" value="8"/>
+            <column name="total_spent" value="645.20"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at" value="NOW()"/>
+            <column name="updated_at" value="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
