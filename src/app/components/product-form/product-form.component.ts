@@ -10,7 +10,7 @@ import { takeUntil } from 'rxjs/operators';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="card">
-      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-4 sm:space-y-6">
         <!-- Product Name Field -->
         <div class="form-group">
           <label for="productName" class="form-label">
@@ -37,7 +37,7 @@ import { takeUntil } from 'rxjs/operators';
         </div>
 
         <!-- Status and Price Row - Responsive -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <!-- Status Field -->
           <div class="form-group">
             <label for="status" class="form-label">Status</label>
@@ -189,7 +189,6 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   private setupFormSubscriptions(): void {
-    // Auto-save draft functionality could be added here
     this.productForm.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -201,13 +200,11 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     if (this.productForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       
-      // Simulate API call
       setTimeout(() => {
         console.log('Product Form Data:', this.productForm.value);
         this.isSubmitting = false;
         this.showSuccessMessage = true;
         
-        // Hide success message after 3 seconds
         setTimeout(() => {
           this.showSuccessMessage = false;
         }, 3000);

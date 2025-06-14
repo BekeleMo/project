@@ -19,12 +19,12 @@ interface Customer {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-4 sm:space-y-6">
       <!-- Search and Filter Section -->
       <div class="card">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           <!-- Search Input -->
-          <div class="form-group mb-0 sm:col-span-2 lg:col-span-1">
+          <div class="form-group mb-0 md:col-span-2 lg:col-span-1">
             <label for="searchCustomers" class="form-label">Search Customers</label>
             <div class="relative">
               <input
@@ -73,23 +73,23 @@ interface Customer {
         </div>
 
         <!-- Quick Stats -->
-        <div class="mt-6 pt-6 border-t border-gray-100">
-          <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-100">
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ getTotalCustomers() }}</div>
-              <div class="text-sm text-gray-500">Total</div>
+              <div class="text-lg sm:text-2xl font-bold text-blue-600">{{ getTotalCustomers() }}</div>
+              <div class="text-xs sm:text-sm text-gray-500">Total</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-green-600">{{ getActiveCustomers() }}</div>
-              <div class="text-sm text-gray-500">Active</div>
+              <div class="text-lg sm:text-2xl font-bold text-green-600">{{ getActiveCustomers() }}</div>
+              <div class="text-xs sm:text-sm text-gray-500">Active</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-gray-600">{{ getInactiveCustomers() }}</div>
-              <div class="text-sm text-gray-500">Inactive</div>
+              <div class="text-lg sm:text-2xl font-bold text-gray-600">{{ getInactiveCustomers() }}</div>
+              <div class="text-xs sm:text-sm text-gray-500">Inactive</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-purple-600">{{ filteredCustomers.length }}</div>
-              <div class="text-sm text-gray-500">Filtered</div>
+              <div class="text-lg sm:text-2xl font-bold text-purple-600">{{ filteredCustomers.length }}</div>
+              <div class="text-xs sm:text-sm text-gray-500">Filtered</div>
             </div>
           </div>
         </div>
@@ -97,8 +97,8 @@ interface Customer {
 
       <!-- Customer List -->
       <div class="card">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900">
             Customers ({{ filteredCustomers.length }})
           </h3>
           <div class="flex flex-col sm:flex-row gap-2">
@@ -118,9 +118,9 @@ interface Customer {
         </div>
 
         <!-- Loading State -->
-        <div *ngIf="isLoading" class="flex items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span class="ml-3 text-gray-600">Loading customers...</span>
+        <div *ngIf="isLoading" class="flex items-center justify-center py-8 sm:py-12">
+          <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
+          <span class="ml-3 text-sm sm:text-base text-gray-600">Loading customers...</span>
         </div>
 
         <!-- Desktop Table -->
@@ -129,19 +129,19 @@ interface Customer {
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Customer
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Join Date
                   </th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-4 xl:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -149,24 +149,24 @@ interface Customer {
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr *ngFor="let customer of filteredCustomers; trackBy: trackByCustomerId" 
                     class="hover:bg-gray-50 transition-colors duration-150">
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
+                      <div class="flex-shrink-0 h-8 w-8 xl:h-10 xl:w-10">
+                        <div class="h-8 w-8 xl:h-10 xl:w-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-xs xl:text-sm">
                           {{ getInitials(customer.name) }}
                         </div>
                       </div>
-                      <div class="ml-4">
+                      <div class="ml-3 xl:ml-4">
                         <div class="text-sm font-medium text-gray-900">{{ customer.name }}</div>
-                        <div class="text-sm text-gray-500">ID: {{ customer.id }}</div>
+                        <div class="text-xs xl:text-sm text-gray-500">ID: {{ customer.id }}</div>
                       </div>
                     </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ customer.email }}</div>
-                    <div *ngIf="customer.phone" class="text-sm text-gray-500">{{ customer.phone }}</div>
+                    <div *ngIf="customer.phone" class="text-xs xl:text-sm text-gray-500">{{ customer.phone }}</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <span 
                       class="status-badge"
                       [class.active]="customer.status === 'active'"
@@ -175,10 +175,10 @@ interface Customer {
                       {{ customer.status | titlecase }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td class="px-4 xl:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ customer.joinDate | date:'mediumDate' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td class="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-2">
                       <button class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,13 +204,13 @@ interface Customer {
                    class="mobile-card">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
-                    <div class="flex-shrink-0 h-12 w-12">
-                      <div class="h-12 w-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium">
+                    <div class="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12">
+                      <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
                         {{ getInitials(customer.name) }}
                       </div>
                     </div>
                     <div>
-                      <h4 class="text-lg font-medium text-gray-900">{{ customer.name }}</h4>
+                      <h4 class="text-base sm:text-lg font-medium text-gray-900">{{ customer.name }}</h4>
                       <p class="text-sm text-gray-600">{{ customer.email }}</p>
                       <p *ngIf="customer.phone" class="text-sm text-gray-500">{{ customer.phone }}</p>
                     </div>
@@ -247,7 +247,7 @@ interface Customer {
           </div>
 
           <!-- Mobile Cards -->
-          <div class="md:hidden space-y-4">
+          <div class="md:hidden space-y-3 sm:space-y-4">
             <div *ngFor="let customer of filteredCustomers; trackBy: trackByCustomerId" 
                  class="mobile-card">
               <div class="flex items-start justify-between mb-3">
@@ -285,15 +285,15 @@ interface Customer {
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!isLoading && filteredCustomers.length === 0" class="text-center py-12">
+        <div *ngIf="!isLoading && filteredCustomers.length === 0" class="text-center py-8 sm:py-12">
           <div class="text-gray-400 mb-4">
-            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mx-auto h-10 w-10 sm:h-12 sm:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No customers found</h3>
-          <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria.</p>
+          <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No customers found</h3>
+          <p class="text-sm sm:text-base text-gray-500 mb-4">Try adjusting your search or filter criteria.</p>
           <button class="btn btn-primary">
             Add Your First Customer
           </button>
@@ -381,7 +381,6 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   private setupFilters(): void {
-    // Search filter
     this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
@@ -390,12 +389,10 @@ export class CustomerListComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => this.applyFilters());
 
-    // Status filter
     this.statusFilterControl.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.applyFilters());
 
-    // Sort control
     this.sortControl.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.applyFilters());
@@ -404,7 +401,6 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   private applyFilters(): void {
     let filtered = [...this.customers];
 
-    // Apply search filter
     const searchTerm = this.searchControl.value?.toLowerCase() || '';
     if (searchTerm) {
       filtered = filtered.filter(customer =>
@@ -414,13 +410,11 @@ export class CustomerListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Apply status filter
     const statusFilter = this.statusFilterControl.value;
     if (statusFilter) {
       filtered = filtered.filter(customer => customer.status === statusFilter);
     }
 
-    // Apply sorting
     const sortBy = this.sortControl.value;
     filtered.sort((a, b) => {
       switch (sortBy) {
